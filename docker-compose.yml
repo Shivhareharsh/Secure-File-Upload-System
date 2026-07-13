@@ -1,0 +1,21 @@
+version: "3.9"
+
+services:
+  backend:
+    build: ./backend
+    container_name: secure-upload-backend
+    ports:
+      - "5001:5001"
+
+    volumes:
+      - ./backend/uploads:/app/uploads
+      - ./backend/data:/app/data
+
+  frontend:
+    build: ./frontend
+    container_name: secure-upload-frontend
+    ports:
+      - "5173:5173"
+
+    depends_on:
+      - backend
