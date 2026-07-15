@@ -1,56 +1,110 @@
-import { FaFileAlt } from "react-icons/fa";
+function FileDetails({
+  selectedFile,
+}) {
 
-function FileDetails({ selectedFile }) {
-  return (
-    <div className="card shadow border-0 rounded-4 h-100">
+  if (!selectedFile) {
 
-      <div className="card-body">
+    return (
 
-        <h3 className="mb-4">
-          <FaFileAlt className="me-2 text-primary" />
-          File Information
-        </h3>
+      <div className="card p-4">
 
-        {!selectedFile ? (
-          <div className="text-center py-4">
+        <h2>
+          📄 File Information
+        </h2>
 
-            <p className="text-muted">
-              No file selected
-            </p>
-
-          </div>
-        ) : (
-          <div>
-
-            <p>
-              <strong>Name:</strong><br />
-              {selectedFile.name}
-            </p>
-
-            <hr />
-
-            <p>
-              <strong>Type:</strong><br />
-              {selectedFile.type}
-            </p>
-
-            <hr />
-
-            <p>
-              <strong>Size:</strong><br />
-              {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-            </p>
-
-            <hr />
-
-            <div className="alert alert-success mb-0">
-              ✅ Ready for upload
-            </div>
-
-          </div>
-        )}
+        <p>
+          No file selected
+        </p>
 
       </div>
+    );
+  }
+
+  const previewUrl =
+    URL.createObjectURL(
+      selectedFile
+    );
+
+  return (
+
+    <div className="card p-4">
+
+      <h2>
+        📄 File Information
+      </h2>
+
+      <p>
+
+        <strong>
+          Name:
+        </strong>
+
+        {" "}
+        {selectedFile.name}
+
+      </p>
+
+      <p>
+
+        <strong>
+          Type:
+        </strong>
+
+        {" "}
+        {selectedFile.type}
+
+      </p>
+
+      <p>
+
+        <strong>
+          Size:
+        </strong>
+
+        {" "}
+        {(
+          selectedFile.size /
+          1024 /
+          1024
+        ).toFixed(2)}
+
+        {" MB"}
+
+      </p>
+
+      {selectedFile.type.startsWith(
+        "image/"
+      ) && (
+
+        <img
+          src={previewUrl}
+          alt="preview"
+
+          style={{
+
+            width: "100%",
+
+            borderRadius:
+              "10px",
+          }}
+        />
+
+      )}
+
+      {selectedFile.type ===
+        "application/pdf" && (
+
+        <iframe
+          src={previewUrl}
+
+          title="preview"
+
+          width="100%"
+
+          height="400"
+        />
+
+      )}
 
     </div>
   );

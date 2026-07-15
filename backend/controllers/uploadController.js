@@ -1,4 +1,3 @@
-const NodeClam = require("clamscan");
 const fs = require("fs-extra");
 const path = require("path");
 
@@ -16,18 +15,8 @@ const uploadFile = async (req, res) => {
     });
   }
 
-  console.log("Uploaded File:");
-  console.log(req.file);
-
   try {
-    console.log("Skipping ClamAV scan...");
-
-    // Temporary scan status
     const scan = "Clean";
-
-    // ===============================
-    // Save history
-    // ===============================
 
     const historyPath = path.join(
       __dirname,
@@ -73,6 +62,10 @@ const uploadFile = async (req, res) => {
 
     history = history.slice(0, 20);
 
+    await fs.ensureDir(
+      path.join(__dirname, "..", "data")
+    );
+
     await fs.writeJson(historyPath, history, {
       spaces: 2,
     });
@@ -87,8 +80,6 @@ const uploadFile = async (req, res) => {
     });
 
   } catch (err) {
-    console.log("========== UPLOAD ERROR ==========");
-
     console.error(err);
 
     return res.status(500).json({
@@ -100,19 +91,45 @@ const uploadFile = async (req, res) => {
 };
 
 // ===============================
+// Get Upload History
+// ===============================
+
+const getHistory = async (req, res) => {
+  try {
+    const historyPath = path.join(
+      __dirname,
+      "..",
+      "data",
+      "history.json"
+    );
+
+    let history = [];
+
+    if (await fs.pathExists(historyPath)) {
+      history = await fs.readJson(historyPath);
+    }
+
+    return res.status(200).json(history);
+
+  } catch (err) {
+    console.error(err);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to load history.",
+    });
+  }
+};
+
+// ===============================
 // Delete File
 // ===============================
 
 const deleteFile = async (req, res) => {
   try {
-    console.log("==============================");
-    console.log("DELETE REQUEST RECEIVED");
-
     const fileName = decodeURIComponent(
       req.params.fileName
     );
-
-    console.log("Requested file:", fileName);
 
     const filePath = path.join(
       __dirname,
@@ -121,13 +138,9 @@ const deleteFile = async (req, res) => {
       fileName
     );
 
-    console.log("Full path:", filePath);
-
     const fileExists = await fs.pathExists(
       filePath
     );
-
-    console.log("File exists:", fileExists);
 
     if (!fileExists) {
       return res.status(404).json({
@@ -137,8 +150,6 @@ const deleteFile = async (req, res) => {
     }
 
     await fs.remove(filePath);
-
-    console.log("✅ File deleted");
 
     const historyPath = path.join(
       __dirname,
@@ -161,16 +172,12 @@ const deleteFile = async (req, res) => {
       spaces: 2,
     });
 
-    console.log("✅ History updated");
-
     return res.status(200).json({
       success: true,
       message: "File deleted successfully.",
     });
 
   } catch (err) {
-    console.log("========== DELETE ERROR ==========");
-
     console.error(err);
 
     return res.status(500).json({
@@ -183,5 +190,6 @@ const deleteFile = async (req, res) => {
 
 module.exports = {
   uploadFile,
+  getHistory,
   deleteFile,
 };

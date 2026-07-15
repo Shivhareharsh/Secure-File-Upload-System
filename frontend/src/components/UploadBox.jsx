@@ -1,233 +1,152 @@
 import { useState } from "react";
-import api from "../services/api";
+import { uploadFile } from "../services/uploadService";
+import "./UploadBox.css";
 
 function UploadBox({
   selectedFile,
   setSelectedFile,
-  uploadStatus,
-  setUploadStatus,
   loadHistory,
 }) {
-  const [uploading, setUploading] = useState(false);
-  const [message, setMessage] = useState("");
-  const [progress, setProgress] = useState(0);
-  const [preview, setPreview] = useState(null);
 
-  const handleFileChange = (event) => {
-    const file = event.target.files[0];
+  const [message, setMessage] =
+    useState("");
 
-    if (!file) return;
+  const [progress, setProgress] =
+    useState(0);
 
-    const allowedTypes = [
-      "application/pdf",
-      "image/png",
-      "image/jpeg",
-    ];
+  const handleFileChange = (
+    event
+  ) => {
 
-    const maxSize = 5 * 1024 * 1024;
-
-    const typeValid = allowedTypes.includes(file.type);
-    const sizeValid = file.size <= maxSize;
-
-    if (!typeValid) {
-      alert("Only PDF, PNG and JPG files are allowed.");
-      return;
-    }
-
-    if (!sizeValid) {
-      alert("File size must be less than 5 MB.");
-      return;
-    }
-
-    setSelectedFile(file);
-    setPreview(URL.createObjectURL(file));
-
-    setUploadStatus({
-      fileTypeValid: true,
-      fileSizeValid: true,
-      uploaded: false,
-      virusScan: "Not Started",
-    });
+    setSelectedFile(
+      event.target.files[0]
+    );
 
     setMessage("");
+
     setProgress(0);
   };
 
   const handleUpload = async () => {
-    console.log("Upload button clicked");
 
     if (!selectedFile) {
-      alert("Please select a file first.");
+
+      setMessage(
+        "Please select a file."
+      );
+
       return;
     }
 
-    const formData = new FormData();
-    formData.append("file", selectedFile);
-
     try {
-      setUploading(true);
 
-      console.log("Sending request to backend...");
+      const result =
+        await uploadFile(
+          selectedFile,
 
-      const response = await api.post(
-        "/upload",
-        formData,
-        {
-          onUploadProgress: (progressEvent) => {
-            const percentCompleted = Math.round(
-              (progressEvent.loaded * 100) /
-                progressEvent.total
-            );
+          (event) => {
 
-            setProgress(percentCompleted);
-          },
-        }
-      );
+            const percent =
+              Math.round(
+                (event.loaded * 100) /
+                event.total
+              );
 
-      console.log("Success:");
-      console.log(response.data);
+            setProgress(percent);
+          }
+        );
 
       setMessage(
-        `${response.data.message}\n\nVirus Scan: ${response.data.scan}`
+        result.message ||
+          "File uploaded successfully."
       );
 
-      setUploadStatus({
-        fileTypeValid: true,
-        fileSizeValid: true,
-        uploaded: true,
-        virusScan: response.data.scan,
-      });
+      setSelectedFile(null);
 
-      await loadHistory();
+      if (loadHistory) {
+
+        await loadHistory();
+      }
 
     } catch (error) {
 
-      console.log("========== ERROR ==========");
-      console.log(error);
+      console.error(error);
 
-      if (error.response) {
+      setMessage(
 
-        console.log("Status:", error.response.status);
-        console.log("Response:", error.response.data);
+        error.response?.data
+          ?.message ||
 
-        setMessage(error.response.data.message);
-
-        setUploadStatus((prev) => ({
-          ...prev,
-          uploaded: false,
-          virusScan: "Failed",
-        }));
-
-      } else if (error.request) {
-
-        console.log("No response received");
-        console.log(error.request);
-
-        setMessage("Backend did not respond.");
-
-      } else {
-
-        console.log("Error:", error.message);
-
-        setMessage("Unable to connect to backend.");
-
-      }
-
-    } finally {
-
-      setUploading(false);
-
-      setTimeout(() => {
-        setProgress(0);
-      }, 2000);
-
+          "Backend did not respond."
+      );
     }
   };
 
   return (
-    <div className="card shadow-lg border-0 p-4 rounded-4">
 
-      <h2 className="text-center mb-4">
-        📤 Upload File
-      </h2>
+    <div className="upload-container">
 
-      <input
-        type="file"
-        className="form-control mb-3"
-        onChange={handleFileChange}
-      />
+      <label className="choose-file-btn">
+
+        📁 Choose File
+
+        <input
+          type="file"
+          hidden
+          onChange={
+            handleFileChange
+          }
+        />
+
+      </label>
+
+      {selectedFile && (
+
+        <p className="file-name">
+
+          Selected:
+          {" "}
+          {selectedFile.name}
+
+        </p>
+
+      )}
 
       <button
-        className="btn btn-primary w-100"
+        className="upload-btn"
         onClick={handleUpload}
-        disabled={uploading}
       >
-        {uploading ? "Uploading..." : "Upload File"}
+
+        🚀 Upload File
+
       </button>
 
-      {uploading && (
+      <div className="progress mt-3">
 
-        <div className="mt-3">
+        <div
+          className="progress-bar"
 
-          <div className="progress">
+          role="progressbar"
 
-            <div
-              className="progress-bar progress-bar-striped progress-bar-animated"
-              role="progressbar"
-              style={{ width: `${progress}%` }}
-            >
-              {progress}%
-            </div>
+          style={{
 
-          </div>
+            width: `${progress}%`,
+          }}
+        >
 
-        </div>
-
-      )}
-
-      {preview && (
-
-        <div className="mt-4 text-center">
-
-          <h5>Preview</h5>
-
-          {selectedFile.type === "application/pdf" ? (
-
-            <a
-              href={preview}
-              target="_blank"
-              rel="noreferrer"
-              className="btn btn-secondary"
-            >
-              📄 Open PDF
-            </a>
-
-          ) : (
-
-            <img
-              src={preview}
-              alt="Preview"
-              className="img-fluid rounded"
-              style={{
-                maxHeight: "250px",
-                border: "1px solid #ccc",
-              }}
-            />
-
-          )}
+          {progress}%
 
         </div>
 
-      )}
+      </div>
 
       {message && (
 
-        <div
-          className="alert alert-info mt-3"
-          style={{ whiteSpace: "pre-line" }}
-        >
+        <p className="message">
+
           {message}
-        </div>
+
+        </p>
 
       )}
 

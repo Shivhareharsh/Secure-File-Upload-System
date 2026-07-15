@@ -23,9 +23,27 @@ function Home() {
   const loadHistory = async () => {
     try {
       const response = await api.get("/history");
-      setHistory(response.data);
+
+      console.log("History response:", response.data);
+
+      if (Array.isArray(response.data)) {
+        setHistory(response.data);
+      } else if (Array.isArray(response.data.history)) {
+        setHistory(response.data.history);
+      } else if (Array.isArray(response.data.files)) {
+        setHistory(response.data.files);
+      } else {
+        console.error(
+          "History response is not an array:",
+          response.data
+        );
+
+        setHistory([]);
+      }
     } catch (err) {
-      console.error("Unable to load history", err);
+      console.error("Unable to load history:", err);
+
+      setHistory([]);
     }
   };
 

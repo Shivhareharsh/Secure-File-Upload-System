@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: secure-file-upload-system-frontend:latest
+          image: secure-file-upload-system-frontend:v10
           imagePullPolicy: Never
 
           ports:

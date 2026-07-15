@@ -5,6 +5,7 @@ const path = require("path");
 const {
   uploadFile,
   deleteFile,
+  getHistory,
 } = require("../controllers/uploadController");
 
 const fileValidation = require("../middleware/fileValidation");
@@ -14,6 +15,7 @@ const router = express.Router();
 // ===============================
 // Multer Storage Configuration
 // ===============================
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "uploads/");
@@ -32,6 +34,7 @@ const upload = multer({
 // ===============================
 // Upload File
 // ===============================
+
 router.post(
   "/",
   upload.single("file"),
@@ -40,8 +43,15 @@ router.post(
 );
 
 // ===============================
+// Upload History
+// ===============================
+
+router.get("/history", getHistory);
+
+// ===============================
 // Download File
 // ===============================
+
 router.get("/download/:fileName", (req, res) => {
   const filePath = path.join(
     __dirname,
@@ -63,6 +73,7 @@ router.get("/download/:fileName", (req, res) => {
 // ===============================
 // Delete Uploaded File
 // ===============================
+
 router.delete("/:fileName", deleteFile);
 
 module.exports = router;
