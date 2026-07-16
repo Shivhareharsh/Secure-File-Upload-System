@@ -11,7 +11,7 @@ function Header() {
           </div>
 
           <h1 className="display-4 fw-bold">
-            Secure File Upload System
+            Secure File Upload System - ArgoCD Working ✅
           </h1>
 
           <p className="lead text-secondary">
