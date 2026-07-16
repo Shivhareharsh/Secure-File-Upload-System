@@ -7,6 +7,9 @@ export default defineConfig({
   server: {
     host: "0.0.0.0",
 
+    // Allow external hosts such as ngrok
+    allowedHosts: true,
+
     proxy: {
       "/api": {
         target: "http://backend-service:5001",
