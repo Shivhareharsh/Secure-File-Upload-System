@@ -19,8 +19,8 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: secure-file-upload-system-frontend:v10
-          imagePullPolicy: Never
+          image: host.minikube.internal/secure-file-upload/frontend:v10
+          imagePullPolicy: IfNotPresent
 
           ports:
             - containerPort: 5173

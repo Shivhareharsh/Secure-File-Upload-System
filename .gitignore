@@ -22,3 +22,5 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+backend/harbor/
+backend/harbor-online-installer-v2.13.1.tgz
